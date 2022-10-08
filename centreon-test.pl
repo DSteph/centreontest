@@ -1,3 +1,6 @@
+use JSON;
+
+# My hope is that this saves processing time, but it probably doesn't
 $path = $ARGV[0];
 
 if( ! (-e $path) ) {
@@ -6,7 +9,6 @@ if( ! (-e $path) ) {
 }
 
 open($fd, '<', $ARGV[0]) or die("Could not open the file at specified path $path\n");
-
 
 @charSeparators = ( ',', '.' ); 
 $lines, $words, $chars = 0;
@@ -33,6 +35,13 @@ while( defined( $l = <$fd> ) ) {
    }
 }
 
-%output = ( 'Lines' => $lines, 'Words' => $words, 'Characters' => $chars );
+# We create the json at the same path as origin file
+$savePath = substr( $path, 0, rindex( $path, "." ) ) . '_parsed.json';
+$name = substr( $path, rindex( $path, "/" ) + 1 );
 
-print(encode_json(%output));
+%output = ( 'Name'=> $name, 'Lines' => $lines, 'Words' => $words, 'Characters' => $chars );
+# JSON Output will be unordered
+$json = encode_json \%output;
+
+open( $fd2,'>',$savePath ) or die( "Could not write the file at path $savePath\n" );
+print( $fd2 $json );
